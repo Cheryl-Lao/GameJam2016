@@ -77,32 +77,37 @@ class GamePanel extends JPanel implements KeyListener{
 	public static ArrayList<DroppedFood> foodDrop; //dropped Food
 	public static int movetimer; //keeps track of how many milliseconds have passed 
 	public static int pebbletimer; //timer that controls when to create a new missile if you continuously press spacebar
-	public static int score; //your score
+	///public static int score; //your score
 	public static int level; //what level (out of 3) you are on
 	public static int hP; // how full the trilobite is
 	public static boolean gameOver;
+	public static ArrayList<Explosion> explosions;
+	public static ArrayList<Image> explosionPics;
 	
 	public GamePanel(Trilobites m){
 		//constructs GamePanel with settings at beginning of game and creates new lists----------------------------------------------
-		score = 0;
+		///   score = 0;
 		level = 1;
-		hP = 0;
+		hP = 5;
 		movetimer = 0;
 		pebbletimer = 0;
 		bubbles = new ArrayList<Bubble>();
 		poppedBubbles = new ArrayList<Bubble>();
 		pebbles = new ArrayList<Pebble>();
 		foodDrop = new ArrayList<DroppedFood>();
+		explosions = new ArrayList<Explosion>();
+		explosionPics = new ArrayList<Image>();
+		
 		
 		//============================================================================================================================
 		
 		keys = new boolean[KeyEvent.KEY_LAST+1];
 		
 		// UPLOADS ALL IMAGES ========================================================================================================
-		back = new ImageIcon("images/layout_game screen real smaller.png").getImage();
-		foodBubble1 = new ImageIcon("images/bubble_small.jpg").getImage();
+		back = new ImageIcon("images/bg.png").getImage();
+		foodBubble1 = new ImageIcon("images/Bubble-1.png").getImage();
 		food1 = new ImageIcon("images/icon_gunbaguette1.png").getImage();
-		trilo1 = new ImageIcon("images/anomalocaris_small.jpg").getImage();
+		trilo1 = new ImageIcon("images/Trilo lost some weight.png").getImage();
 		pebble = new ImageIcon("images/bullet.png").getImage(); //TODO change to actual pebble
 		/**javert = new ImageIcon("small_ch_javert.png").getImage();
 		soldier1 = new ImageIcon("small_ch_soldier1.png").getImage(); //grey 
@@ -121,6 +126,11 @@ class GamePanel extends JPanel implements KeyListener{
 		lifebaguette = new ImageIcon("icon_lifebaguette smallest.png").getImage(); //baguettes representing lives at the top bar
 		
 		**/
+		
+		for (int i = 2; i < 7; i++){
+			explosionPics.add(new ImageIcon("images/Bubble-"+i+".png").getImage());
+		}
+		
 		mainFrame = m;	
 	    spotx = 700;
         spoty = 533;
@@ -131,7 +141,7 @@ class GamePanel extends JPanel implements KeyListener{
 	}
 	
 	public void loadBubbles(){
-		int bX = 0; //x coordinate 
+		int bX = -40; //x coordinate 
 		int bY = rand.nextInt(270); //y coordinate
 		Image imag = foodBubble1;
 		Image fP = food1;
@@ -171,11 +181,12 @@ class GamePanel extends JPanel implements KeyListener{
     	
     	//TODO parabolic motion
     	
-    	if (movetimer%11 == 0){
+    	if (movetimer%13 == 0){
     		for (int i = 0; i<bubbles.size(); i++){
     			
-    			bubbles.get(i).bubX+=2; //all soldiers move across 7 px to right every time
-        	}
+    			bubbles.get(i).bubX+=5; //all soldiers move across 7 px to right every time
+    			bubbles.get(i).bubY+= 6*Math.sin(movetimer);
+    		}
     		
     	}
     }
@@ -271,6 +282,7 @@ class GamePanel extends JPanel implements KeyListener{
 		if(keys[KeyEvent.VK_SPACE] ){ //fire pebbles when you press space
 			if (pebbletimer%50== 0 ){ //when you have space bar continuously pressed you can only fire one pebble every 50 ms
 				pebbles.add(new Pebble(spotx, spoty)); //creates new missile at your (x,y), adds to list 
+			    hP -= 1;
 			}
 			pebbletimer+=1; //to make sure you can't fire pebbles continuously if you press spacebar continuously
 		}
@@ -307,6 +319,8 @@ class GamePanel extends JPanel implements KeyListener{
 					if (peb.posx>=bub.bubX && peb.posx<=bub.bubX+28
 					&& peb.posy>=bub.bubY && peb.posy<=bub.bubY+42){
 						fallenBubbles.add(bub);
+						//System.out.println("explosion made");
+						explosions.add(new Explosion(bub.bubX,bub.bubY,1));
 						sand.add(peb);
 					}
 					if (peb.posy<=40){ 
@@ -332,10 +346,10 @@ class GamePanel extends JPanel implements KeyListener{
 				if (foo.dfX>=spotx && foo.dfX<=spotx+32 //TODO dimensions of trilobite
 					&& foo.dfY>=spoty && foo.dfY<=spoty+63){
 						//if you catch the food, you gain one health point
-						//TODO health point
-						hP += 1;
+						
+						hP += 3;
 						crumbs.add(foo);
-						System.out.println(hP);
+						//System.out.println(score);
 				}
 				
 				if (foo.dfX>=658){ //removes food if it goes out of bounds
@@ -345,7 +359,20 @@ class GamePanel extends JPanel implements KeyListener{
 		}
 		foodDrop.removeAll(crumbs); //removes food from the list of food on screen
 		
-
+		ArrayList<Explosion> finishedExplosions = new ArrayList<Explosion>();
+				
+		if (movetimer%5==0){
+			for (Explosion e : explosions){
+				if (e.frame+1 < 6){
+					e.frame += 1;
+				}
+				else{
+					finishedExplosions.add(e);
+				} 		
+			}
+		}
+		
+		explosions.removeAll(finishedExplosions);
 
 		Point mouse = MouseInfo.getPointerInfo().getLocation(); //location of your mouse on screen
 		if (checkLevel()){ //checks if something happened to advance levels or end game
@@ -387,10 +414,17 @@ class GamePanel extends JPanel implements KeyListener{
     	
     	g.drawImage(trilo1,spotx,spoty,this); //draws your marius
     	
+    	if (explosions.size()>0){ //draws explosions
+    		//   /////////System.out.println(explosions.size());
+        	for(Explosion e: explosions){
+        		g.drawImage(explosionPics.get(e.frame-1), e.ex, e.ey, this);
+        	}
+        }
+    	
     	//displays score
     	g.setColor(new Color(74,18,18));
     	g.setFont(new Font("Old English Text MT",Font.PLAIN, 24));
-    	g.drawString(""+score, 111,26);
+    	g.drawString(""+hP, 111,26);
     }
 }
 
