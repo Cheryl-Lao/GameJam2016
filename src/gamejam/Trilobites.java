@@ -8,7 +8,15 @@ import java.awt.MouseInfo;
 import java.util.ArrayList;
 import java.util.Random;
 
+/*
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+*/
+
 public class Trilobites extends JFrame implements ActionListener {
+	
+	
 	Timer myTimer; //timer to keep track of how many milliseconds have passed within the game   
 	GamePanel game = null; //Gamepanel for the main game, which has all the graphics and game functions
 	//GameOver endGame=null; //page that shows up at the end of the game
@@ -22,15 +30,33 @@ public class Trilobites extends JFrame implements ActionListener {
 	}
 	
 	public void initialize(){ //initialize sets most of the variables needed for the frame
-    	myTimer = new Timer(10, this);	 // trigger every 10 ms
-    	setSize(625,658);
+		/* //------MUSIC-----------
+		
+				try{
+				    AudioInputStream audioInputStream =
+				        AudioSystem.getAudioInputStream(
+				            this.getClass().getResource("<background_music.mp3>"));
+				    Clip clip = AudioSystem.getClip();
+				    clip.open(audioInputStream);
+				    clip.start();
+				}
+				catch(Exception ex)
+				{
+				}
+				
+		//----------------------
+				*/
+		
+		myTimer = new Timer(10, this);	 // trigger every 10 ms
+    	//setSize(757, 783); //751, 755
+    	setSize(757, 783);
     	setResizable(false);
     	setLayout(null);
     	//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     	
     	if (game == null){ //creates new game in the frame if one isn't currently running
     		game = new GamePanel(this);
-    		game.setSize(625,658);
+    		game.setSize(757, 783);
 			game.setLocation(0,0);
     		add(game);
     	}
@@ -52,7 +78,7 @@ public class Trilobites extends JFrame implements ActionListener {
 		remove(game); //removes game (game is reloaded if replayed)
 		game=null;
 		endGame = new GameOver(this, gm, score, 0); // calls EndGame panel
-		endGame.setSize(625,658);
+		endGame.setSize(757, 783);
 		endGame.setLocation(0,0);
 		add(endGame);
 		endGame.setVisible(true);
@@ -104,11 +130,11 @@ class GamePanel extends JPanel implements KeyListener{
 		keys = new boolean[KeyEvent.KEY_LAST+1];
 		
 		// UPLOADS ALL IMAGES ========================================================================================================
-		back = new ImageIcon("images/bg.png").getImage();
+		back = new ImageIcon("images/bg.jpg").getImage();
 		foodBubble1 = new ImageIcon("images/Bubble-1.png").getImage();
 		food1 = new ImageIcon("images/icon_gunbaguette1.png").getImage();
 		trilo1 = new ImageIcon("images/Trilo lost some weight.png").getImage();
-		pebble = new ImageIcon("images/bullet.png").getImage(); //TODO change to actual pebble
+		pebble = new ImageIcon("images/rock_projectile.png").getImage(); //TODO change to actual pebble
 		/**javert = new ImageIcon("small_ch_javert.png").getImage();
 		soldier1 = new ImageIcon("small_ch_soldier1.png").getImage(); //grey 
 		soldier2 = new ImageIcon("small_ch_soldier2.png").getImage(); //red
@@ -134,7 +160,7 @@ class GamePanel extends JPanel implements KeyListener{
 		mainFrame = m;	
 	    spotx = 700;
         spoty = 533;
-		setSize(625,658);
+		setSize(757, 783);
         addKeyListener(this);
         //loadBubbles(); //loads up new soldiers for the aliveSoldiers list
         gameOver = false;
@@ -195,8 +221,9 @@ class GamePanel extends JPanel implements KeyListener{
    
     
     public void pop(Bubble popped){ //takes in dead soldiers and removes/adds it to lists
-    	poppedBubbles.add(popped); 
+    	/*poppedBubbles.add(popped); 
     	bubbles.remove(popped);	
+    	*/
     	
     	//create DroppedFood 
     	foodDrop.add(new DroppedFood(food1, popped.bubX+ 20, popped.bubY + 20));
@@ -281,7 +308,7 @@ class GamePanel extends JPanel implements KeyListener{
 		}
 		if(keys[KeyEvent.VK_SPACE] ){ //fire pebbles when you press space
 			if (pebbletimer%50== 0 ){ //when you have space bar continuously pressed you can only fire one pebble every 50 ms
-				pebbles.add(new Pebble(spotx, spoty)); //creates new missile at your (x,y), adds to list 
+				pebbles.add(new Pebble(spotx+40, spoty)); //creates new missile at your (x,y), adds to list 
 			    hP -= 1;
 			}
 			pebbletimer+=1; //to make sure you can't fire pebbles continuously if you press spacebar continuously
@@ -320,6 +347,7 @@ class GamePanel extends JPanel implements KeyListener{
 					&& peb.posy>=bub.bubY && peb.posy<=bub.bubY+42){
 						fallenBubbles.add(bub);
 						//System.out.println("explosion made");
+						pop(bub);
 						explosions.add(new Explosion(bub.bubX,bub.bubY,1));
 						sand.add(peb);
 					}
@@ -337,14 +365,14 @@ class GamePanel extends JPanel implements KeyListener{
 
 		pebbles.removeAll(sand); //removes all sand from pebbles
 		for (Bubble b : fallenBubbles){
-			pop(b); //every bubble in fallenBubbles go through pop method
+			bubbles.remove(b); //every bubble in fallenBubbles go through pop method
 		}
 		
 		ArrayList<DroppedFood> crumbs = new ArrayList<DroppedFood>(); //list of bullets to be removed
 		if (foodDrop.size()>=1){ //checks location of every missile on board
 			for (DroppedFood foo:foodDrop){
-				if (foo.dfX>=spotx && foo.dfX<=spotx+32 //TODO dimensions of trilobite
-					&& foo.dfY>=spoty && foo.dfY<=spoty+63){
+				if (foo.dfX>=spotx && foo.dfX<=spotx+70 //TODO dimensions of trilobite
+					&& foo.dfY>=spoty && foo.dfY<=spoty+113){
 						//if you catch the food, you gain one health point
 						
 						hP += 3;
@@ -408,12 +436,6 @@ class GamePanel extends JPanel implements KeyListener{
     		g.drawImage(pebble,pebbles.get(i).posx, pebbles.get(i).posy,this);
     	}
     	
-    	for (int i = 0; i<foodDrop.size();i++){ //draws dropped food 
-    		g.drawImage(foodDrop.get(i).foodPic,foodDrop.get(i).dfX, foodDrop.get(i).dfY,this);
-    	}
-    	
-    	g.drawImage(trilo1,spotx,spoty,this); //draws your marius
-    	
     	if (explosions.size()>0){ //draws explosions
     		//   /////////System.out.println(explosions.size());
         	for(Explosion e: explosions){
@@ -421,10 +443,18 @@ class GamePanel extends JPanel implements KeyListener{
         	}
         }
     	
+    	for (int i = 0; i<foodDrop.size();i++){ //draws dropped food 
+    		g.drawImage(foodDrop.get(i).foodPic,foodDrop.get(i).dfX, foodDrop.get(i).dfY,this);
+    	}
+    	
+    	g.drawImage(trilo1,spotx,spoty,this); //draws your marius
+    	
+    	
+    	
     	//displays score
-    	g.setColor(new Color(74,18,18));
-    	g.setFont(new Font("Old English Text MT",Font.PLAIN, 24));
-    	g.drawString(""+hP, 111,26);
+    	g.setColor(new Color(255,255,255));
+    	g.setFont(new Font("Old English Text MT",Font.PLAIN, 65));
+    	g.drawString(""+hP, 100,75);
     }
 }
 
