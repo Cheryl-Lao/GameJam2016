@@ -8,6 +8,9 @@ import java.awt.MouseInfo;
 import java.util.ArrayList;
 import java.util.Random;
 
+import java.io.*;
+import sun.audio.*;
+
 /*
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -15,7 +18,7 @@ import javax.sound.sampled.Clip;
 */
 
 public class Trilobites extends JFrame implements ActionListener {
-	
+		
 	
 	Timer myTimer; //timer to keep track of how many milliseconds have passed within the game   
 	GamePanel game = null; //Gamepanel for the main game, which has all the graphics and game functions
@@ -86,6 +89,7 @@ public class Trilobites extends JFrame implements ActionListener {
 
     public static void main(String[] arguments) { 
     	Trilobites frame = new Trilobites();		
+    	
     }
 }
 
@@ -109,6 +113,7 @@ class GamePanel extends JPanel implements KeyListener{
 	public static boolean gameOver;
 	public static ArrayList<Explosion> explosions;
 	public static ArrayList<Image> explosionPics;
+
 	
 	public GamePanel(Trilobites m){
 		//constructs GamePanel with settings at beginning of game and creates new lists----------------------------------------------
@@ -180,8 +185,9 @@ class GamePanel extends JPanel implements KeyListener{
 		else if (predOrPrey == 1){ //create plant
 			
 		}**/
+		Random rn = new Random();
 		
-		bubbles.add(new Bubble(bX, bY, "food", foodBubble1, food1)); //TODO change to variables
+		bubbles.add(new Bubble(bX, bY, "food", foodBubble1, food1, 4 + rn.nextInt(6))); //TODO change to variables
 	
 	}
 	
@@ -211,7 +217,7 @@ class GamePanel extends JPanel implements KeyListener{
     		for (int i = 0; i<bubbles.size(); i++){
     			
     			bubbles.get(i).bubX+=5; //all soldiers move across 7 px to right every time
-    			bubbles.get(i).bubY+= 6*Math.sin(movetimer);
+    			bubbles.get(i).bubY+= bubbles.get(i).bubAmplitude*Math.sin(movetimer);
     		}
     		
     	}
@@ -295,16 +301,20 @@ class GamePanel extends JPanel implements KeyListener{
     	}
     }
    	//----------------------------------------------------------
-	
+
+
 	public void move(){ //stuff that happens every millisecond
 		Random randomGenerator = new Random();
 		spotx = Math.max(0,spotx); //the max and min x coordinates at which your trilobite can travel
     	spotx = Math.min(getWidth()-32, spotx);
+    	
 		if(keys[KeyEvent.VK_RIGHT] ){ //move right when right key is pressed
 			spotx += 5;
+
 		}
 		if(keys[KeyEvent.VK_LEFT] ){ //move left when left key is pressed
 			spotx -= 5;
+
 		}
 		if(keys[KeyEvent.VK_SPACE] ){ //fire pebbles when you press space
 			if (pebbletimer%50== 0 ){ //when you have space bar continuously pressed you can only fire one pebble every 50 ms
@@ -312,11 +322,14 @@ class GamePanel extends JPanel implements KeyListener{
 			    hP -= 1;
 			}
 			pebbletimer+=1; //to make sure you can't fire pebbles continuously if you press spacebar continuously
+			
+	
 		}
 		else{
 			pebbletimer = 0; //resets pebbletimer at 0 so that when space is pressed a pebble is fired immediately
+
 		}
-		
+
 		bubbleMove(); //moves bubbles
 		
 		

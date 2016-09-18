@@ -7,12 +7,18 @@ public class Bubble {
 	public String bubType; //"food" or "predator"
 	public Image bubPic;
 	public Image foodPic;
-	public Bubble(int bX, int bY, String t, Image imag, Image fP){
+	
+	//New things I added to try to get each bubble to move slightly differently
+	public int bubAmplitude;
+	
+	
+	public Bubble(int bX, int bY, String t, Image imag, Image fP, int amplitude){
 		bubX = bX;
 		bubY = bY;
 		bubType = t;
 		bubPic = imag;
 		foodPic = fP;
+		bubAmplitude = amplitude;
 	}
 
 }
