@@ -138,6 +138,7 @@ class GamePanel extends JPanel implements KeyListener{
 		back = new ImageIcon("images/bg.jpg").getImage();
 		foodBubble1 = new ImageIcon("images/Bubble-1.png").getImage();
 		food1 = new ImageIcon("images/icon_gunbaguette1.png").getImage();
+		
 		trilo1 = new ImageIcon("images/Trilo lost some weight.png").getImage();
 		pebble = new ImageIcon("images/rock_projectile.png").getImage(); //TODO change to actual pebble
 		/**javert = new ImageIcon("small_ch_javert.png").getImage();
@@ -175,7 +176,7 @@ class GamePanel extends JPanel implements KeyListener{
 		int bX = -40; //x coordinate 
 		int bY = rand.nextInt(270); //y coordinate
 		Image imag = foodBubble1;
-		Image fP = food1;
+		Image fP;
 		int predOrPrey = rand.nextInt(2); //choose whether to generate pred or prey
 		/**if (predOrPrey == 0){ //create predator
 			int imagNumber = rand.nextInt(3);
@@ -186,8 +187,25 @@ class GamePanel extends JPanel implements KeyListener{
 			
 		}**/
 		Random rn = new Random();
+		int amplitude = 4 + rn.nextInt(6);
+		Random type_num = new Random();
 		
-		bubbles.add(new Bubble(bX, bY, "food", foodBubble1, food1, 4 + rn.nextInt(6))); //TODO change to variables
+		int [] chances = {1, 3, 6, 9};
+		int chosen = type_num.nextInt(4);
+		
+		String type;
+		
+		if(chances[chosen] %3 != 0){
+			type = "predator";
+			fP =  new ImageIcon("images/scary_predator.png").getImage();
+		}
+		else{
+			type = "food";
+			fP = food1;
+		}
+		
+		
+		bubbles.add(new Bubble(bX, bY, type, imag, fP, amplitude)); //TODO change to variables
 	
 	}
 	
@@ -232,7 +250,7 @@ class GamePanel extends JPanel implements KeyListener{
     	*/
     	
     	//create DroppedFood 
-    	foodDrop.add(new DroppedFood(food1, popped.bubX+ 20, popped.bubY + 20));
+    	foodDrop.add(new DroppedFood(popped.foodPic, popped.bubX+ 20, popped.bubY + 20));
 		
 		
 		//gives points based on what colour soldiers where
@@ -385,7 +403,7 @@ class GamePanel extends JPanel implements KeyListener{
 		if (foodDrop.size()>=1){ //checks location of every missile on board
 			for (DroppedFood foo:foodDrop){
 				if (foo.dfX>=spotx && foo.dfX<=spotx+70 //TODO dimensions of trilobite
-					&& foo.dfY>=spoty && foo.dfY<=spoty+113){
+					&& foo.dfY>=spoty && foo.dfY<=spoty+113 && foo.foodPic == food1){
 						//if you catch the food, you gain one health point
 						
 						hP += 3;
@@ -393,6 +411,26 @@ class GamePanel extends JPanel implements KeyListener{
 						//System.out.println(score);
 				}
 				
+				else if (foo.dfX>=spotx && foo.dfX<=spotx+70 //TODO dimensions of trilobite
+						&& foo.dfY>=spoty && foo.dfY<=spoty+113){
+							//if you catch the food, you gain one health point
+							
+					
+					
+					hP -= 8;
+					
+					//RESTART THE GAME
+					
+					
+					
+					
+					
+					
+					
+							//hP += 3;
+							crumbs.add(foo);
+							//System.out.println(score);
+					}
 				if (foo.dfX>=658){ //removes food if it goes out of bounds
 					crumbs.add(foo); 
 				}
